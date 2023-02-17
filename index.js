@@ -4,6 +4,7 @@ const app = express();
 const dotnev = require("dotenv").config();
 require("./db/config")
 const user = require("./db/user")
+const product = require("./db/product");
 
 app.use(express.json())
 app.use(cors())
@@ -44,7 +45,7 @@ app.post("/login", async (req, res) => {
             return res.status(200).send(User)
         }
         else {
-            return res.status(404).send("user not found")
+            return res.status(404).send({result:"user not found"})
         }
     }
     catch (err) {
@@ -52,6 +53,25 @@ app.post("/login", async (req, res) => {
     }
 
 })
+
+app.post("/add-product",async (req,res)=>{
+    try {
+        let data = req.body;
+        if(!data){
+            return res.status(400).send("please provide product details")
+        }
+        let insertProduct = await product.create(data);
+       
+        return res.status(201).send({ status: true, result: insertProduct })
+    }
+    catch (err) {
+        return res.status(500).send(err)
+    }
+
+    
+})
+
+
 
 app.listen(process.env.PORT, (err) => {
     if (!err) {
