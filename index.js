@@ -71,6 +71,89 @@ app.post("/add-product",async (req,res)=>{
     
 })
 
+app.get("/get-product",async (req,res)=>{
+    try {
+        let products = await product.find();
+        if(products.length>0){
+            return res.status(200).send(products)
+        }
+        else{
+            return res.status(404).send({result:'no result found'})
+        }
+        
+    } catch (error) {
+        return res.status(500).send(error)
+        
+    }
+})
+
+app.delete("/product/:id",async(req,res)=>{
+    try{
+    let id = req.params.id;
+    const result = await product.deleteOne({_id:id});
+    return res.status(200).send(result)
+    }
+    catch(err){
+        return res.status(500).send({status:false,message:err})
+    }
+
+})
+
+app.get("/product/:id",async(req,res)=>{
+  try {
+    let id = req.params.id;
+    let result = await product.findOne({_id:id});
+    if(result){
+        return res.status(200).send(result)
+    }
+    else{
+        return res.status(404).send({status:false,message:"no result found"})
+    }
+    
+  } catch (error) {
+
+    return res.status(500).send({status:false,message:error})
+    
+  }
+
+
+})
+
+app.put("/product/:id", async (req, resp) => {
+    try{
+    let result = await product.updateOne(
+        { _id: req.params.id },
+        { $set: req.body }
+    )
+    return resp.status(200).send(result)
+    }
+    catch(err){
+        return resp.status(500).send({status:false,message:err})
+    }
+});
+
+app.get("/search/:key", async (req, resp) => {
+    try{
+    let result = await product.find({
+        "$or": [
+            {
+                name: { $regex: req.params.key }  
+            },
+            {
+                company: { $regex: req.params.key }
+            },
+            {
+                category: { $regex: req.params.key }
+            }
+        ]
+    });
+    
+   return  resp.status(200).send(result);
+}
+catch(err){
+    return resp.status(500).send({status:false,message:err})
+}
+})
 
 
 app.listen(process.env.PORT, (err) => {
