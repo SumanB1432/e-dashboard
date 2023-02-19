@@ -70,7 +70,7 @@ app.post("/login", async (req, res) => {
 
 })
 
-app.post("/add-product",async (req,res)=>{
+app.post("/add-product",verifyToken,async (req,res)=>{
     try {
         let data = req.body;
         if(!data){
@@ -87,7 +87,7 @@ app.post("/add-product",async (req,res)=>{
     
 })
 
-app.get("/get-product",async (req,res)=>{
+app.get("/get-product",verifyToken,async (req,res)=>{
     try {
         let products = await product.find();
         if(products.length>0){
@@ -103,7 +103,7 @@ app.get("/get-product",async (req,res)=>{
     }
 })
 
-app.delete("/product/:id",async(req,res)=>{
+app.delete("/product/:id",verifyToken ,async(req,res)=>{
     try{
     let id = req.params.id;
     const result = await product.deleteOne({_id:id});
@@ -115,7 +115,7 @@ app.delete("/product/:id",async(req,res)=>{
 
 })
 
-app.get("/product/:id",async(req,res)=>{
+app.get("/product/:id",verifyToken,async(req,res)=>{
   try {
     let id = req.params.id;
     let result = await product.findOne({_id:id});
@@ -135,7 +135,7 @@ app.get("/product/:id",async(req,res)=>{
 
 })
 
-app.put("/product/:id", async (req, resp) => {
+app.put("/product/:id",verifyToken, async (req, resp) => {
     try{
     let result = await product.updateOne(
         { _id: req.params.id },
@@ -148,7 +148,7 @@ app.put("/product/:id", async (req, resp) => {
     }
 });
 
-app.get("/search/:key", async (req, resp) => {
+app.get("/search/:key",verifyToken, async (req, resp) => {
     try{
     let result = await product.find({
         "$or": [
@@ -170,6 +170,27 @@ catch(err){
     return resp.status(500).send({status:false,message:err})
 }
 })
+
+function verifyToken(req,res,next){
+    const token = req.headers['authorization'];
+    // console.log(token)
+    if(token){
+        jwt.verify(token,process.env.JWT_KEY,(err,val)=>{
+
+            if(err){
+                return res.status(403).send({result:"You are not authorized"})
+            }
+            else{
+                next()
+            }
+        })
+        
+    }
+    else{
+        return res.status(401).send({result:"Pleae send the token"})
+    }
+  
+}
 
 
 app.listen(process.env.PORT, (err) => {
