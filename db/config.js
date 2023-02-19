@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const dotnev = require("dotenv").config();
 mongoose.set('strictQuery', false);
-mongoose.connect("mongodb+srv://Suman-1432:Suman1432@cluster0.bkkfmpr.mongodb.net/e-dashboard").then(()=>{
+mongoose.connect(`${process.env.MONGO_URL}`).then(()=>{
     console.log("mongodb connected successfully")
 }).catch((err)=>{
     console.log(err)

@@ -3,7 +3,8 @@ const cors = require("cors")
 const app = express();
 const dotnev = require("dotenv").config();
 require("./db/config")
-const user = require("./db/user")
+const user = require("./db/user");
+const jwt = require("jsonwebtoken");
 const product = require("./db/product");
 
 app.use(express.json())
@@ -18,13 +19,20 @@ app.post("/register", async (req, res) => {
         if(!data){
             return res.status(400).send("please provide your details")
         }
-        let insertData = await user.create(data);
+        let insertData = await user.create(data);    
         let User = {
             "_id": insertData._id,
             "name": insertData.name,
             "email": insertData.email
         }
-        return res.status(201).send({ status: true, result: User })
+        jwt.sign(User,`${process.env.JWT_KEY}`,{expiresIn:"2h"},(err,token)=>{
+
+            if(err){
+                return res.status(400).send({result:"SOME INTERNAL SERVER ERROR OCCURRED, PLEASE TRY AFTER SOME TIME "})
+            }
+            return res.status(200).send({User,auth : token})
+
+        })
     }
     catch (err) {
         return res.status(500).send(err)
@@ -42,7 +50,15 @@ app.post("/login", async (req, res) => {
         }
         let User = await user.findOne(req.body).select("-password");
         if (User) {
-            return res.status(200).send(User)
+            jwt.sign({User},`${process.env.JWT_KEY}`,{expiresIn:"2h"},(err,token)=>{
+
+                if(err){
+                    return res.status(400).send({result:"SOME INTERNAL SERVER ERROR OCCURRED, PLEASE TRY AFTER SOME TIME "})
+                }
+                return res.status(200).send({User,auth : token})
+
+            })
+            
         }
         else {
             return res.status(404).send({result:"user not found"})
