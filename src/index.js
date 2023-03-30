@@ -2,15 +2,15 @@ const express = require("express");
 const cors = require("cors")
 const app = express();
 const dotnev = require("dotenv").config();
-require("./db/config")
-const user = require("./db/user");
+require("../db/config")
+const user = require("../db/user");
 const jwt = require("jsonwebtoken");
-const product = require("./db/product");
+const product = require("../db/product");
 
 app.use(express.json())
 app.use(cors())
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
     res.send("app is working")
 })
 app.post("/register", async (req, res) => {
